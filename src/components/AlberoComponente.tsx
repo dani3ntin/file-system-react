@@ -2,30 +2,30 @@ import React from "react";
 import Albero from "../classi/Albero";
 import Articolo from "../classi/Articolo";
 import Nodo from "../classi/Nodo";
-import WidgetNodo from "./WidgetNodo";
-import WidgetArticolo from "./WidgetArticolo";
+import WidgetNodo from "./widgets/WidgetNodo";
+import WidgetArticolo from "./widgets/WidgetArticolo";
 import Elemento from "../classi/Elemento";
 import "./StampaAlbero.css"
 import { useState, useEffect } from "react";
 import trattinoOrizzontale from "../images/trattinoOrizzontale.png"
 import trattinoSuDx from "../images/trattinoSuDx.png"
 import trattinoSuDxGiu  from"../images/trattinoSuDxGiu.png"
-import vuoto  from"../images/vuoto.png"
+import vuoto from"../images/vuoto.png"
 
 function AlberoComponente(props: any): JSX.Element {
-
-    const [hoveredItemId, setHoveredItemId] = useState(null);
+    const [menuTastoDestro, setMenuTastoDestro] = useState({aperto: false, x: -9999, y: -9999});
     
     function stampaAlberoOld(albero: Albero | null): JSX.Element {
         if (!albero) return <></>;
         return stampaNodoEArticoli(albero.getNodoPadre(), 0);
     }
     
+    //NON è QUESTA LE FUNZIONE
     function stampaNodoEArticoli(nodoPadre: Nodo, depth: number): JSX.Element {
         if(!nodoPadre){
             return <></>;
         }
-        const layerUno =  <WidgetNodo nodo={nodoPadre} depth={depth} handleOnDrag={props.handleOnDrag} handleDropOnNodo={handleDropOnNodo} setHoveredItemId={setHoveredItemId}/>
+        const layerUno =  <WidgetNodo albero={props.albero} nodo={nodoPadre} depth={depth} handleOnDrag={props.handleOnDrag} handleDropOnNodo={handleDropOnNodo} setHoveredItemId={props.setHoveredItemId}/>
         let altriLayer = <></>
         for(const nodo of nodoPadre.successori){
             altriLayer = <>{altriLayer}{stampaNodoEArticoli(nodo, depth + 1)}</>
@@ -35,7 +35,7 @@ function AlberoComponente(props: any): JSX.Element {
             elencoArticoli = 
             <>{elencoArticoli}
             {
-                <WidgetArticolo articolo={articolo} depth={depth} handleOnDrag={props.handleOnDrag} handleDropOnArticolo={handleDropOnArticolo} setHoveredItemId={setHoveredItemId}/>
+                <WidgetArticolo albero={props.albero} articolo={articolo} depth={depth} handleOnDrag={props.handleOnDrag} handleDropOnArticolo={handleDropOnArticolo} setHoveredItemId={props.setHoveredItemId}/>
             }
             </>
         }
@@ -49,6 +49,14 @@ function AlberoComponente(props: any): JSX.Element {
             newAlbero.modificaElemento(nodo);
             props.setAlbero(newAlbero);
         }
+    }
+
+    function apriMenuTastoDestro(x: number, y: number): void{
+        setMenuTastoDestro({aperto: true, x: x, y: y});
+    }
+
+    function chiudiMenuTastoDestro(){
+        setMenuTastoDestro({aperto: false, x: -9999, y: -9999});
     }
 
     function stampaAlbero(albero: (string | Elemento)[][]): JSX.Element {
@@ -66,19 +74,22 @@ function AlberoComponente(props: any): JSX.Element {
                         handleDropOnNodo={handleDropOnNodo} 
                         handlePremutoSuApriChiudiCartella={() => apriChiudiNodo(albero[i][j + 1])}
                         albero={props.albero}
-                        setHoveredItemId={setHoveredItemId}
-                        hoveredItemId={hoveredItemId}/>
+                        setAlbero={props.setAlbero}
+                        setHoveredItemId={props.setHoveredItemId}
+                        hoveredItemId={props.hoveredItemId}/>
                         }</>
                 }
                 if(albero[i][j] instanceof Articolo){
                     layerInterno = <>{layerInterno}
                     {
-                        <WidgetArticolo 
+                        <WidgetArticolo
+                        albero={props.albero}
+                        setAlbero={props.setAlbero}
                         articolo={albero[i][j]} 
                         handleOnDrag={props.handleOnDrag} 
                         handleDropOnArticolo={handleDropOnArticolo} 
-                        setHoveredItemId={setHoveredItemId}
-                        hoveredItemId={hoveredItemId}/>
+                        setHoveredItemId={props.setHoveredItemId}
+                        hoveredItemId={props.hoveredItemId}/>
                         }</>
                 }
                 if(albero[i][j] === ' '){
@@ -210,10 +221,12 @@ function AlberoComponente(props: any): JSX.Element {
             elementToAdd = new Articolo("Nuovo Articolo")
             else
             elementToAdd = new Nodo("Nuovo Nodo")
-        else
-            nuovoAlbero.eliminaElementoDallAlbero(elementToAdd.id)
+
         const nodoPadre = nuovoAlbero.trovaElementoNellAlbero(idNodo)
-        if(!nodoPadre || nodoPadre instanceof Articolo) return
+        console.log(nodoPadre)
+        if(nodoPadre === null || !(nodoPadre instanceof Nodo)) return;
+        if(nuovoAlbero.NodoAPredecessoreDiNodoB(elementToAdd, nodoPadre)) return;
+        nuovoAlbero.eliminaElementoDallAlbero(elementToAdd.id)
         if(elementToAdd instanceof Articolo)
             nuovoAlbero.aggiungiArticolo(elementToAdd, nodoPadre.id)
         else if(elementToAdd instanceof Nodo)

@@ -100,28 +100,32 @@ export default class Albero {
     return null
   }
 
-  eliminaElementoDallAlbero(idElemento: number): void {
-    this.eliminaElemento(this.nodoPadre, idElemento)
+  eliminaElementoDallAlbero(idElemento: number): Elemento | null {
+    return this.eliminaElemento(this.nodoPadre, idElemento)
   }
 
-  private eliminaElemento(nodoPadre: Nodo, idElemento: number): void{
-    if(!nodoPadre) return
+  private eliminaElemento(nodoPadre: Nodo, idElemento: number): Elemento | null {
+    if(!nodoPadre) return null;
     if(nodoPadre.id === idElemento) this.nodoPadre = new Nodo()
     for(const successore of nodoPadre.successori){
       if(successore.id === idElemento){
-        nodoPadre.successori = nodoPadre.successori.filter((successore) => successore.id !== idElemento)
-        return
+        const elementoDaEliminare = nodoPadre.successori.filter((successore) => successore.id === idElemento);
+        nodoPadre.successori = nodoPadre.successori.filter((successore) => successore.id !== idElemento);
+        return elementoDaEliminare[0];
       }
     }
     for(const articolo of nodoPadre.articoli){
       if(articolo.id === idElemento){
+        const elementoDaEliminare = nodoPadre.articoli.filter((articolo) => articolo.id === idElemento)
         nodoPadre.articoli = nodoPadre.articoli.filter((articolo) => articolo.id !== idElemento)
-        return
+        return elementoDaEliminare[0];
       }
     }
     for(const successore of nodoPadre.successori){
-      this.eliminaElemento(successore, idElemento)
+      const result = this.eliminaElemento(successore, idElemento);
+      if(result !== null) return result;
     }
+    return null;
   }
 
   contaElementiNellAlbero(): number{
@@ -166,5 +170,23 @@ export default class Albero {
     for(const successore of nodo.successori){
       this.EliminaSuccessoriEArticoliDaNodiChiusiPassoRicorsivo(successore)
     }
+  }
+
+  NodoAPredecessoreDiNodoB(nodoA: Nodo, nodoB: Nodo): boolean{
+    return this.NodoAPredecessoreDiNodoBPassoRicorsivo(this.nodoPadre, nodoA, nodoB);
+  }
+
+  private NodoAPredecessoreDiNodoBPassoRicorsivo(nodo: Nodo, nodoA: Nodo, nodoB: Nodo): boolean{
+    if(!nodo) return false;
+    if(nodo.id === nodoA.id){
+      const result = this.trovaElemento(nodo, nodoB.id);
+      if(result !== null) return true;
+      return false;
+    }
+    for(const successore of nodo.successori){
+      const result = this.NodoAPredecessoreDiNodoBPassoRicorsivo(successore, nodoA, nodoB);
+      if(result) return true;
+    }
+    return false;
   }
 }

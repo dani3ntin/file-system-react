@@ -6,7 +6,7 @@
     "strict": true,
     "jsx": "react",
     "allowImportingTsExtensions": true,
-    "esModuleInterop": true
+    "esModuleInterop": true,
   },
   "include": ["src"]
 }

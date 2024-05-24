@@ -4,10 +4,11 @@ import Articolo from "./classi/Articolo.ts";
 import Albero from "./classi/Albero.ts";
 import "./App.css";
 import React from "react";
-import AlberoComponente from "./components/StampaAlbero.tsx";
+import AlberoComponente from "./components/AlberoComponente.tsx";
 
 function App(){
   const [albero, setAlbero] = useState<Albero | null>(null);
+  const [hoveredItemId, setHoveredItemId] = useState(null);
 
   useEffect(() => {
     const n0 = new Nodo("Padre")
@@ -44,11 +45,10 @@ function App(){
   return (
     <div className="App">
       <div className="widgets">
-        <div className="widget" draggable onDragStart={(e) => handleOnDrag(e, "Nodo", -1)}>Nodo</div>
-        <div className="widget" draggable onDragStart={(e) => handleOnDrag(e, "Articolo", -1)}>Articolo</div>
+        <div className="widget" draggable onDragStart={(e) => handleOnDrag(e, "Nodo", -1)} onDragEnd={() => setHoveredItemId(null)}>Nodo</div>
+        <div className="widget" draggable onDragStart={(e) => handleOnDrag(e, "Articolo", -1)} onDragEnd={() => setHoveredItemId(null)}>Articolo</div>
       </div>
-        <AlberoComponente albero={albero} setAlbero={setAlbero} handleOnDrag={handleOnDrag}/>
-      <button onClick={() => console.log(albero)}>AAAAAAA</button>
+        <AlberoComponente albero={albero} setAlbero={setAlbero} handleOnDrag={handleOnDrag} hoveredItemId={hoveredItemId} setHoveredItemId={setHoveredItemId}/>
     </div>
   )
 }

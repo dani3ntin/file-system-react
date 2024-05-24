@@ -1,19 +1,21 @@
 import React from "react";
 import { useState } from "react";
-import Nodo from "../classi/Nodo";
+import Nodo from "../../classi/Nodo";
 import { FaFolderOpen, FaFolder,  FaRegFolder, FaRegFolderOpen, FaSquare } from "react-icons/fa";
 import "./WidgetNodo.css"
-import menoConTrattiniSuDxGiu from "../images/menoConTrattiniSuDxGiu.png"
-import cartellaApertaConTrattini from "../images/cartellaApertaConTrattini.png"
-import menoConTrattiniSuDx  from"../images/menoConTrattiniSuDx.png"
-import piuConTrattiniSuDx  from"../images/piuConTrattiniSuDx.png"
-import piuConTrattiniSuDxGiu from "../images/piuConTrattiniSuDxGiu.png"
-import vuoto from "../images/vuoto.png"
-import Albero from "../classi/Albero";
+import menoConTrattiniSuDxGiu from "../../images/menoConTrattiniSuDxGiu.png"
+import cartellaApertaConTrattini from "../../images/cartellaApertaConTrattini.png"
+import menoConTrattiniSuDx  from"../../images/menoConTrattiniSuDx.png"
+import piuConTrattiniSuDx  from"../../images/piuConTrattiniSuDx.png"
+import piuConTrattiniSuDxGiu from "../../images/piuConTrattiniSuDxGiu.png"
+import vuoto from "../../images/vuoto.png"
+import Albero from "../../classi/Albero";
+import MenuTastoDestro from "../MenuTastoDestro";
 
 
 function WidgetNodo(props: any): JSX.Element {
     const [dragIniziato, setDragIniziato] = useState(false);
+    const [menuTastoDestro, setMenuTastoDestro] = useState({aperto: false, x: -9999, y: -9999});
 
     function getImageApriChiudiCartella(): string{
         const albero = new Albero(props.albero.nodoPadre);
@@ -52,12 +54,40 @@ function WidgetNodo(props: any): JSX.Element {
                 backgroundColor: "lightblue",
             };
         }
+        if(menuTastoDestro.aperto === true){
+            return {
+                backgroundColor: "blue",
+                color: "white"
+            };
+        }
         return {};
     }
+
+    function handleRightClick(e: React.MouseEvent){
+        e.preventDefault();
+        setMenuTastoDestro({aperto: true, x: e.clientX, y: e.clientY});
+    }
+
+    function chiudiMenuTastoDestro(){
+        setMenuTastoDestro({aperto: false, x: -9999, y: -9999});
+    }
+
+    function premutoSuOpzioneMenuTastoDestro(comando: string){
+        const albero = new Albero(props.albero.nodoPadre);
+        if(comando === "elimina"){
+            albero.eliminaElementoDallAlbero(props.nodo.id);
+            props.setAlbero(albero);
+            chiudiMenuTastoDestro();
+        }
+    }
+
     return(
         <div className="dropped-widget-nodo" key={props.nodo.id} /*style={{ paddingLeft: (props.depth * 20) + "px" }}*/ onDrop={(e) => props.handleDropOnNodo(e, props.nodo.id)}
         draggable onDragStart={(e) => onDragStartHandler(e, "Nodo", props.nodo.id)} onDragOver={() => props.setHoveredItemId(props.nodo.id)}
-        onDragLeave={() => props.setHoveredItemId(null)} style={getStile()} onDragEnd={onDragEndHandler}>
+        onDragLeave={() => props.setHoveredItemId(null)} style={getStile()} onDragEnd={onDragEndHandler} onContextMenu={handleRightClick}>
+            {
+                menuTastoDestro.aperto && <MenuTastoDestro x={menuTastoDestro.x} y={menuTastoDestro.y} chiudiMenu={chiudiMenuTastoDestro} premutoSuOpzioneMenuTastoDestro={premutoSuOpzioneMenuTastoDestro}/>
+            }
             <div className="icona-apri-chiudi-cartella">
                 <img 
                     src={getImageApriChiudiCartella()} 
