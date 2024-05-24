@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    "noEmit": true,
+    "target": "ES5",
+    "module": "commonjs",
+    "strict": true,
+    "jsx": "react",
+    "allowImportingTsExtensions": true,
+    "esModuleInterop": true
+  },
+  "include": ["src"]
+}

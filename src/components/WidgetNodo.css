@@ -1,0 +1,21 @@
+.dropped-widget-nodo {
+  text-align: left;
+  display:flex;
+}
+
+.nome-componente {
+  margin-left: 4px;
+}
+
+.icona-nodo {
+  color: #38a9a5;
+}
+
+.icona-apri-chiudi-cartella{
+  margin-right: 4px;
+  margin-left: 0px;
+}
+
+.icona {
+  font-size: 20px;
+}

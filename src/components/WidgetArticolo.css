@@ -1,0 +1,18 @@
+.dropped-widget-articolo {
+  text-align: left;
+  display:flex;
+}
+
+.nome-componente {
+  margin-left: 4px;
+}
+
+.icona-articolo{
+  color: #00329e;
+  margin-right: 5px;
+  margin-left: 5px;
+}
+
+.icona {
+  font-size: 20px;
+}
