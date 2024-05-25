@@ -13,34 +13,9 @@ import trattinoSuDxGiu  from"../images/trattinoSuDxGiu.png"
 import vuoto from"../images/vuoto.png"
 
 function AlberoComponente(props: any): JSX.Element {
-    const [menuTastoDestro, setMenuTastoDestro] = useState({aperto: false, x: -9999, y: -9999});
-    
-    function stampaAlberoOld(albero: Albero | null): JSX.Element {
-        if (!albero) return <></>;
-        return stampaNodoEArticoli(albero.getNodoPadre(), 0);
-    }
-    
-    //NON è QUESTA LE FUNZIONE
-    function stampaNodoEArticoli(nodoPadre: Nodo, depth: number): JSX.Element {
-        if(!nodoPadre){
-            return <></>;
-        }
-        const layerUno =  <WidgetNodo albero={props.albero} nodo={nodoPadre} depth={depth} handleOnDrag={props.handleOnDrag} handleDropOnNodo={handleDropOnNodo} setHoveredItemId={props.setHoveredItemId}/>
-        let altriLayer = <></>
-        for(const nodo of nodoPadre.successori){
-            altriLayer = <>{altriLayer}{stampaNodoEArticoli(nodo, depth + 1)}</>
-        }
-        let elencoArticoli = <></>
-        for(const articolo of nodoPadre.articoli){
-            elencoArticoli = 
-            <>{elencoArticoli}
-            {
-                <WidgetArticolo albero={props.albero} articolo={articolo} depth={depth} handleOnDrag={props.handleOnDrag} handleDropOnArticolo={handleDropOnArticolo} setHoveredItemId={props.setHoveredItemId}/>
-            }
-            </>
-        }
-        return <>{layerUno}{altriLayer}{elencoArticoli}</>
-    }
+    const [elementoCopiato, setElementoCopiato] = useState<Elemento | null>(null);
+    const [idModoficaNome, setIdModificaNome] = useState(-1);
+    const [nomeInserito, setNomeInserito] = useState("");
 
     function apriChiudiNodo(nodo: any): void{
         if(nodo instanceof Nodo){
@@ -51,12 +26,46 @@ function AlberoComponente(props: any): JSX.Element {
         }
     }
 
-    function apriMenuTastoDestro(x: number, y: number): void{
-        setMenuTastoDestro({aperto: true, x: x, y: y});
+    function memorizzaNuovaCopia(elementoTarget: Elemento){
+        let elementoDaCopiare = null;
+        if(elementoTarget instanceof Articolo || elementoTarget instanceof Nodo){
+            elementoDaCopiare = elementoTarget.creaCopia();
+        }
+        setElementoCopiato(elementoDaCopiare);
     }
 
-    function chiudiMenuTastoDestro(){
-        setMenuTastoDestro({aperto: false, x: -9999, y: -9999});
+    function premutoSuOpzioneMenuTastoDestro(azione: string, elementoTarget: Elemento): void{
+        const albero = new Albero(props.albero.nodoPadre);
+        if(azione === "elimina" || azione === "taglia"){
+            albero.eliminaElementoDallAlbero(elementoTarget.id);
+            props.setAlbero(albero);
+        }
+        if(azione === "taglia" || azione === "copia"){
+            memorizzaNuovaCopia(elementoTarget);
+        }
+        if(azione === "incolla"){
+            if(elementoCopiato === null) return;
+            if(elementoTarget instanceof Articolo){
+                aggiungiElementoAdArticolo(elementoTarget.id, elementoCopiato);
+            }
+            else if(elementoTarget instanceof Nodo && elementoCopiato instanceof Articolo){
+                aggiungiElementoANodo(elementoTarget.id, elementoCopiato);
+            }
+            else if(elementoTarget instanceof Nodo && elementoCopiato instanceof Nodo){
+                if(props.albero.NodoAPredecessoreDiNodoB(elementoCopiato, elementoTarget)) return;
+                aggiungiElementoANodo(elementoTarget.id, elementoCopiato)
+            }
+            memorizzaNuovaCopia(elementoCopiato)
+        }
+        if(azione === "rinomina"){
+            setIdModificaNome(elementoTarget.id);
+            setNomeInserito(elementoTarget.nome)
+        }
+    }
+
+    function modificaElemento(nodo: Nodo){
+        nodo.nome = nomeInserito
+        props.albero.modificaElemento(nodo);
     }
 
     function stampaAlbero(albero: (string | Elemento)[][]): JSX.Element {
@@ -64,32 +73,47 @@ function AlberoComponente(props: any): JSX.Element {
         let layers = <></>;
         for (let i = 0; i < albero.length; i++) {
             let layerInterno = <></>;
-            let paddingLeft: number = 0;
             for (let j = 0; j < albero[i].length; j++) {
                 if(albero[i][j] === '+' || albero[i][j] === '-'){
                     layerInterno = <>{layerInterno}{
                         <WidgetNodo 
-                        nodo={albero[i][j + 1]} 
-                        handleOnDrag={props.handleOnDrag} 
-                        handleDropOnNodo={handleDropOnNodo} 
-                        handlePremutoSuApriChiudiCartella={() => apriChiudiNodo(albero[i][j + 1])}
-                        albero={props.albero}
-                        setAlbero={props.setAlbero}
-                        setHoveredItemId={props.setHoveredItemId}
-                        hoveredItemId={props.hoveredItemId}/>
+                            nodo={albero[i][j + 1]} 
+                            handleOnDrag={props.handleOnDrag} 
+                            handleDropOnNodo={handleDropOnNodo} 
+                            handlePremutoSuApriChiudiCartella={() => apriChiudiNodo(albero[i][j + 1])}
+                            albero={props.albero}
+                            setAlbero={props.setAlbero}
+                            setHoveredItemId={props.setHoveredItemId}
+                            hoveredItemId={props.hoveredItemId}
+                            premutoSuOpzioneMenuTastoDestro={premutoSuOpzioneMenuTastoDestro}
+                            elementoCopiato={elementoCopiato}
+                            modificaNodo={modificaElemento}
+                            idModoficaNome={idModoficaNome}
+                            setIdModificaNome={setIdModificaNome}
+                            nomeInserito={nomeInserito}
+                            setNomeInserito={setNomeInserito}
+                        />
                         }</>
                 }
                 if(albero[i][j] instanceof Articolo){
                     layerInterno = <>{layerInterno}
                     {
                         <WidgetArticolo
-                        albero={props.albero}
-                        setAlbero={props.setAlbero}
-                        articolo={albero[i][j]} 
-                        handleOnDrag={props.handleOnDrag} 
-                        handleDropOnArticolo={handleDropOnArticolo} 
-                        setHoveredItemId={props.setHoveredItemId}
-                        hoveredItemId={props.hoveredItemId}/>
+                            albero={props.albero}
+                            setAlbero={props.setAlbero}
+                            articolo={albero[i][j]} 
+                            handleOnDrag={props.handleOnDrag} 
+                            handleDropOnArticolo={handleDropOnArticolo} 
+                            setHoveredItemId={props.setHoveredItemId}
+                            hoveredItemId={props.hoveredItemId}
+                            premutoSuOpzioneMenuTastoDestro={premutoSuOpzioneMenuTastoDestro}
+                            elementoCopiato={elementoCopiato}
+                            modificaArticolo={modificaElemento}
+                            idModoficaNome={idModoficaNome}
+                            setIdModificaNome={setIdModificaNome}
+                            nomeInserito={nomeInserito}
+                            setNomeInserito={setNomeInserito}
+                        />
                         }</>
                 }
                 if(albero[i][j] === ' '){
@@ -184,27 +208,49 @@ function AlberoComponente(props: any): JSX.Element {
         return griglia;
     }
 
+    function aggiungiElementoAdArticolo(idArticoloTarget: number, elementoDaAggiungere: Elemento){
+        const nodoPadre = props.albero.getPadreDellElementoNellAlbero(idArticoloTarget)
+        if(!nodoPadre) return
+        if(elementoDaAggiungere instanceof Articolo)
+            props.albero.aggiungiArticolo(elementoDaAggiungere, nodoPadre.id)
+        else if(elementoDaAggiungere instanceof Nodo)
+            props.albero.aggiungiNodo(elementoDaAggiungere, nodoPadre.id)
+        const nuovoAlbero = new Albero(props.albero.nodoPadre)
+        props.setAlbero(nuovoAlbero)
+    }
+
     function handleDropOnArticolo(e: React.DragEvent, idArticolo: number): void{
         if(!props.albero) return
         const elementType = e.dataTransfer.getData("widgetType")
         if(elementType === "") return
         const elementId = parseInt(e.dataTransfer.getData("widgetId"))
         if(elementId === idArticolo) return
-        let elementToAdd = props.albero.trovaElementoNellAlbero(elementId)
+        let elementoDaAggiungere = props.albero.trovaElementoNellAlbero(elementId)
+        console.log(elementoDaAggiungere)
         const nuovoAlbero = new Albero(props.albero.nodoPadre)
-        if(elementToAdd === null)
+        if(elementoDaAggiungere === null)
             if(elementType === "Articolo")
-            elementToAdd = new Articolo("Nuovo Articolo")
+            elementoDaAggiungere = new Articolo("Nuovo Articolo")
             else
-            elementToAdd = new Nodo("Nuovo Nodo")
-        else
-            nuovoAlbero.eliminaElementoDallAlbero(elementToAdd.id)
-        const nodoPadre = nuovoAlbero.getPadreDellElementoNellAlbero(idArticolo)
-        if(!nodoPadre) return
-        if(elementToAdd instanceof Articolo)
-            nuovoAlbero.aggiungiArticolo(elementToAdd, nodoPadre.id)
-        else if(elementToAdd instanceof Nodo)
-            nuovoAlbero.aggiungiNodo(elementToAdd, nodoPadre.id)
+            elementoDaAggiungere = new Nodo("Nuovo Nodo")
+        else{
+            const nodoPadre = props.albero.getPadreDellElementoNellAlbero(idArticolo)
+            if(!nodoPadre) return
+            if(elementoDaAggiungere instanceof Nodo){
+                if(elementoDaAggiungere.trovaArticolo(idArticolo)) return;
+            }
+            nuovoAlbero.eliminaElementoDallAlbero(elementoDaAggiungere.id);
+        }
+            
+        aggiungiElementoAdArticolo(idArticolo, elementoDaAggiungere);
+    }
+
+    function aggiungiElementoANodo(idNodoTarget: number, elementoDaAggiungere: Elemento){
+        if(elementoDaAggiungere instanceof Articolo)
+            props.albero.aggiungiArticolo(elementoDaAggiungere, idNodoTarget)
+        else if(elementoDaAggiungere instanceof Nodo)
+        props.albero.aggiungiNodo(elementoDaAggiungere, idNodoTarget)
+        const nuovoAlbero = new Albero(props.albero.nodoPadre)
         props.setAlbero(nuovoAlbero)
     }
     
@@ -214,24 +260,19 @@ function AlberoComponente(props: any): JSX.Element {
         if(elementType === "") return
         const elementId = parseInt(e.dataTransfer.getData("widgetId"))
         if(elementId === idNodo) return
-        let elementToAdd = props.albero.trovaElementoNellAlbero(elementId)
-        const nuovoAlbero = new Albero(props.albero.nodoPadre)
-        if(elementToAdd === null)
+        let elementoDaAggiungere = props.albero.trovaElementoNellAlbero(elementId)
+        if(elementoDaAggiungere === null)
             if(elementType === "Articolo")
-            elementToAdd = new Articolo("Nuovo Articolo")
+            elementoDaAggiungere = new Articolo("Nuovo Articolo")
             else
-            elementToAdd = new Nodo("Nuovo Nodo")
-
+            elementoDaAggiungere = new Nodo("Nuovo Nodo")
+        const nuovoAlbero = new Albero(props.albero.nodoPadre)
         const nodoPadre = nuovoAlbero.trovaElementoNellAlbero(idNodo)
         console.log(nodoPadre)
         if(nodoPadre === null || !(nodoPadre instanceof Nodo)) return;
-        if(nuovoAlbero.NodoAPredecessoreDiNodoB(elementToAdd, nodoPadre)) return;
-        nuovoAlbero.eliminaElementoDallAlbero(elementToAdd.id)
-        if(elementToAdd instanceof Articolo)
-            nuovoAlbero.aggiungiArticolo(elementToAdd, nodoPadre.id)
-        else if(elementToAdd instanceof Nodo)
-            nuovoAlbero.aggiungiNodo(elementToAdd, nodoPadre.id)
-        props.setAlbero(nuovoAlbero)
+        if(nuovoAlbero.NodoAPredecessoreDiNodoB(elementoDaAggiungere, nodoPadre)) return;
+        nuovoAlbero.eliminaElementoDallAlbero(elementoDaAggiungere.id)
+        aggiungiElementoANodo(idNodo, elementoDaAggiungere)
     }
       
     function handleDragOver(e: React.DragEvent): void{
@@ -241,9 +282,6 @@ function AlberoComponente(props: any): JSX.Element {
     return(
         <div className="page" onDragOver={handleDragOver}>
         {
-           /*
-            stampaAlbero(props.albero)
-            */
             stampaAlbero(costruisciGraficaAlbero(props.albero))
         }
         </div>

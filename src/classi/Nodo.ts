@@ -109,6 +109,29 @@ export default class Nodo extends Elemento{
     return 1 + altezzaMax;
   }
 
+  creaCopia(): Nodo{
+    return this.creaCopiaRicorsivo(this);
+  }
+
+  creaCopiaRicorsivo(nodo: Nodo): Nodo{
+    const newSuccessori: Nodo[] = [];
+    for(const successore of nodo.successori){
+      const newNodo = this.creaCopiaRicorsivo(successore);
+      newSuccessori.push(newNodo);
+    }
+
+    const newArticoli: Articolo[] = [];
+    for(const articolo of nodo.articoli){
+      const newArticolo = new Articolo(articolo.nome, articolo.articolo)
+      newArticoli.push(newArticolo);
+    }
+
+    const newNodo = new Nodo(nodo.nome);
+    newNodo.successori = newSuccessori;
+    newNodo.articoli = newArticoli;
+    return newNodo;
+  }
+
 
   toString(): string{
     return `Nome: ${this.nome}, Successori: ${this.successori.map((nodo) => { return nodo.toString(); })}`;

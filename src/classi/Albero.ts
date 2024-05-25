@@ -155,6 +155,9 @@ export default class Albero {
     if(elementoTrovato instanceof Nodo && elemento instanceof Nodo){
       elementoTrovato.aperto = elemento.aperto;
     }
+    if(elementoTrovato instanceof Articolo && elemento instanceof Articolo){
+      elementoTrovato.articolo = elemento.articolo;
+    }
   }
 
   EliminaSuccessoriEArticoliDaNodiChiusi(): void{

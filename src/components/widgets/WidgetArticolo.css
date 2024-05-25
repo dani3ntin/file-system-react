@@ -16,3 +16,11 @@
 .icona {
   font-size: 20px;
 }
+
+.hidden {
+  display: none; /* Oppure puoi usare display: none; per rimuovere completamente l'elemento dal layout */
+}
+
+.visible {
+  display: block; /* Oppure puoi usare display: block; per mostrare l'elemento se usi display: none; sopra */
+}

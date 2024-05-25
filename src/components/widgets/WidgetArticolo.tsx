@@ -1,5 +1,5 @@
 import React from "react";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import Articolo from "../../classi/Articolo";
 import { FaFolderOpen, FaFolder,  FaRegFolder, FaRegFolderOpen, FaSquare } from "react-icons/fa";
 import { CiSquarePlus, CiSquareMinus } from "react-icons/ci";
@@ -11,6 +11,27 @@ import Albero from "../../classi/Albero";
 function WidgetArticolo(props: any): JSX.Element {
     const [dragIniziato, setDragIniziato] = useState(false);
     const [menuTastoDestro, setMenuTastoDestro] = useState({aperto: false, x: -9999, y: -9999});
+    const [elementoCliccato, setElementoCliccato] = useState(false);
+
+    const menuRef = useRef<HTMLDivElement>(null);
+    const textBoxRef = useRef<HTMLInputElement>(null);
+
+    useEffect(() => {
+        function handleClickOutside(event: MouseEvent) {
+            const target = event.target as HTMLElement; 
+            const id = target.id;
+            if(id != "textBoxNome" + props.articolo.id && props.idModoficaNome === props.articolo.id){
+                props.setIdModificaNome(-1);
+                props.modificaArticolo(props.articolo);
+            }
+            setElementoCliccato(false);
+        }
+
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, [menuRef, props]);
 
     function getStile(): object{
         if(dragIniziato){
@@ -23,10 +44,16 @@ function WidgetArticolo(props: any): JSX.Element {
                 backgroundColor: "lightblue",
             };
         }
-        if(menuTastoDestro.aperto === true){
+        if(menuTastoDestro.aperto === true || elementoCliccato){
             return {
                 backgroundColor: "blue",
                 color: "white"
+            };
+        }
+        if(!elementoCliccato){
+            return {
+                backgroundColor: "transparent",
+                color: "black"
             };
         }
         return {};
@@ -51,30 +78,53 @@ function WidgetArticolo(props: any): JSX.Element {
         setMenuTastoDestro({aperto: false, x: -9999, y: -9999});
     }
 
-    function premutoSuOpzioneMenuTastoDestro(comando: string){
-        const albero = new Albero(props.albero.nodoPadre);
-        if(comando === "elimina"){
-            albero.eliminaElementoDallAlbero(props.articolo.id);
-            props.setAlbero(albero);
-            chiudiMenuTastoDestro();
-        }
+    function premutoSuOpzioneMenuTastoDestro(azione: string){
+        chiudiMenuTastoDestro();
+        props.premutoSuOpzioneMenuTastoDestro(azione, props.articolo);
+        if(azione === "rinomina")
+            if (textBoxRef.current) {
+                setTimeout(() => {
+                    textBoxRef.current!.focus();
+                }, 10);
+            }
+    }
+
+    function handleInputChange(event: React.ChangeEvent<HTMLInputElement>){
+        props.setNomeInserito(event.target.value);
+    }
+
+    function onDropHandler(e: React.DragEvent){
+        props.setHoveredItemId(null)
+        props.handleDropOnArticolo(e, props.articolo.id)
     }
 
     return(
         <div className="dropped-widget-articolo" key={props.articolo.id} /*style={{ paddingLeft: ( props.depth * 20 + props.depth + 40) + "px" }}*/ 
-        onDrop={(e) => props.handleDropOnArticolo(e, props.articolo.id)}
+        onDrop={onDropHandler}
         draggable 
         onDragStart={(e) => onDragStartHandler(e, "Articolo", props.articolo.id)} 
         onDragOver={() => props.setHoveredItemId(props.articolo.id)}
         style={getStile()}
         onDragEnd={onDragEndHandler}
         onDragLeave={() => props.setHoveredItemId(null)} 
-        onContextMenu={handleRightClick}>
+        onContextMenu={handleRightClick}
+        onClick={() => setElementoCliccato(true)}>
             {
-                menuTastoDestro.aperto && <MenuTastoDestro x={menuTastoDestro.x} y={menuTastoDestro.y} chiudiMenu={chiudiMenuTastoDestro} premutoSuOpzioneMenuTastoDestro={premutoSuOpzioneMenuTastoDestro} />
+                menuTastoDestro.aperto && 
+                <MenuTastoDestro 
+                    x={menuTastoDestro.x} 
+                    y={menuTastoDestro.y} 
+                    chiudiMenu={chiudiMenuTastoDestro} 
+                    premutoSuOpzioneMenuTastoDestro={premutoSuOpzioneMenuTastoDestro}
+                    elementoCopiato={props.elementoCopiato}
+                />
             }
             <div className="icona-articolo"><FaSquare className="icona"/></div>
-            <div className="nome-componente">{props.articolo.nome}</div>
+            <input type="text" id={"textBoxNome" + props.articolo.id} name="myTextbox" className={props.idModoficaNome === props.articolo.id ? 'visible' : 'hidden'} value={props.nomeInserito} onChange={handleInputChange} ref={textBoxRef}/>
+            {
+                props.idModoficaNome !== props.articolo.id ? <div className="nome-componente" onClick={() => setElementoCliccato(true)}>{props.articolo.nome}</div>
+                : null
+            }
         </div>
     );
 }

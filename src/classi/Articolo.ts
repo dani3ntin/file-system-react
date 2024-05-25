@@ -16,4 +16,8 @@ export default class Articolo extends Elemento {
   getArticolo(): string{
     return this.articolo;
   }
+
+  creaCopia(): Articolo{
+    return new Articolo(this.nome, this.articolo);
+  }
 }

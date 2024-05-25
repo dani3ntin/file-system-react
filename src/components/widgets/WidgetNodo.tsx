@@ -1,5 +1,5 @@
 import React from "react";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import Nodo from "../../classi/Nodo";
 import { FaFolderOpen, FaFolder,  FaRegFolder, FaRegFolderOpen, FaSquare } from "react-icons/fa";
 import "./WidgetNodo.css"
@@ -16,6 +16,28 @@ import MenuTastoDestro from "../MenuTastoDestro";
 function WidgetNodo(props: any): JSX.Element {
     const [dragIniziato, setDragIniziato] = useState(false);
     const [menuTastoDestro, setMenuTastoDestro] = useState({aperto: false, x: -9999, y: -9999});
+    const [elementoCliccato, setElementoCliccato] = useState(false);
+
+    const menuRef = useRef<HTMLDivElement>(null);
+    const textBoxRef = useRef<HTMLInputElement>(null);
+
+    useEffect(() => {
+        function handleClickOutside(event: MouseEvent) {
+            const target = event.target as HTMLElement; 
+            const id = target.id;
+            if(id != "textBoxNome" + props.nodo.id && props.idModoficaNome === props.nodo.id){
+                props.setIdModificaNome(-1);
+                props.modificaNodo(props.nodo);
+            }
+            setElementoCliccato(false);
+        }
+
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, [menuRef, props]);
+
 
     function getImageApriChiudiCartella(): string{
         const albero = new Albero(props.albero.nodoPadre);
@@ -54,10 +76,16 @@ function WidgetNodo(props: any): JSX.Element {
                 backgroundColor: "lightblue",
             };
         }
-        if(menuTastoDestro.aperto === true){
+        if(menuTastoDestro.aperto === true || elementoCliccato){
             return {
                 backgroundColor: "blue",
                 color: "white"
+            };
+        }
+        if(!elementoCliccato){
+            return {
+                backgroundColor: "transparent",
+                color: "black"
             };
         }
         return {};
@@ -72,21 +100,45 @@ function WidgetNodo(props: any): JSX.Element {
         setMenuTastoDestro({aperto: false, x: -9999, y: -9999});
     }
 
-    function premutoSuOpzioneMenuTastoDestro(comando: string){
-        const albero = new Albero(props.albero.nodoPadre);
-        if(comando === "elimina"){
-            albero.eliminaElementoDallAlbero(props.nodo.id);
-            props.setAlbero(albero);
-            chiudiMenuTastoDestro();
-        }
+    function premutoSuOpzioneMenuTastoDestro(azione: string){
+        chiudiMenuTastoDestro();
+        props.premutoSuOpzioneMenuTastoDestro(azione, props.nodo);
+        if(azione === "rinomina")
+            if (textBoxRef.current) {
+                setTimeout(() => {
+                    textBoxRef.current!.focus();
+                }, 10);
+            }
+    }
+
+    function handleInputChange(event: React.ChangeEvent<HTMLInputElement>){
+        props.setNomeInserito(event.target.value);
+    }
+
+    function onDropHandler(e: React.DragEvent){
+        props.setHoveredItemId(null)
+        props.handleDropOnNodo(e, props.nodo.id)
     }
 
     return(
-        <div className="dropped-widget-nodo" key={props.nodo.id} /*style={{ paddingLeft: (props.depth * 20) + "px" }}*/ onDrop={(e) => props.handleDropOnNodo(e, props.nodo.id)}
-        draggable onDragStart={(e) => onDragStartHandler(e, "Nodo", props.nodo.id)} onDragOver={() => props.setHoveredItemId(props.nodo.id)}
-        onDragLeave={() => props.setHoveredItemId(null)} style={getStile()} onDragEnd={onDragEndHandler} onContextMenu={handleRightClick}>
+        <div className="dropped-widget-nodo" 
+            key={props.nodo.id} 
+            onDrop={onDropHandler}
+            draggable onDragStart={(e) => onDragStartHandler(e, "Nodo", props.nodo.id)}
+            onDragOver={() => props.setHoveredItemId(props.nodo.id)}
+            onDragLeave={() => props.setHoveredItemId(null)} 
+            style={getStile()} 
+            onDragEnd={onDragEndHandler} 
+            onContextMenu={handleRightClick}>
             {
-                menuTastoDestro.aperto && <MenuTastoDestro x={menuTastoDestro.x} y={menuTastoDestro.y} chiudiMenu={chiudiMenuTastoDestro} premutoSuOpzioneMenuTastoDestro={premutoSuOpzioneMenuTastoDestro}/>
+                menuTastoDestro.aperto && 
+                <MenuTastoDestro 
+                    x={menuTastoDestro.x} 
+                    y={menuTastoDestro.y} 
+                    chiudiMenu={chiudiMenuTastoDestro} 
+                    premutoSuOpzioneMenuTastoDestro={premutoSuOpzioneMenuTastoDestro}
+                    elementoCopiato={props.elementoCopiato}
+                />
             }
             <div className="icona-apri-chiudi-cartella">
                 <img 
@@ -95,12 +147,17 @@ function WidgetNodo(props: any): JSX.Element {
                     onClick={props.handlePremutoSuApriChiudiCartella}
                 />
             </div>
-                <div className="icona-nodo">
-                    {
-                        props.nodo.aperto ? <FaFolderOpen className="icona"/> : <FaFolder className="icona"/>
-                    }
-                </div>
-            <div className="nome-componente">{props.nodo.nome}</div>
+            <div className="icona-nodo" onClick={() => setElementoCliccato(true)}>
+                {
+                    props.nodo.aperto ? <FaFolderOpen className="icona"/> : <FaFolder className="icona"/>
+                }
+            </div>
+
+            <input type="text" id={"textBoxNome" + props.nodo.id} name="myTextbox" className={props.idModoficaNome === props.nodo.id ? 'visible' : 'hidden'} value={props.nomeInserito} onChange={handleInputChange} ref={textBoxRef}/>
+            {
+                props.idModoficaNome !== props.nodo.id ? <div className="nome-componente" onClick={() => setElementoCliccato(true)}>{props.nodo.nome}</div>
+                : null
+            }
         </div>
     );
 }

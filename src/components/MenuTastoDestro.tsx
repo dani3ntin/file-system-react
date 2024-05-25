@@ -21,29 +21,22 @@ function MenuTastoDestro(props: any): JSX.Element {
         props.chiudiMenu();
     }
 
-    function handleClickSuRinomina(){
-        props.premutoSuOpzioneMenuTastoDestro("rinomina");
-    }
-
-    function handleClickSuTaglia(){
-        props.premutoSuOpzioneMenuTastoDestro("taglia");
-    }
-
-    function handleClickSuCopia(){
-        props.premutoSuOpzioneMenuTastoDestro("copia");
-    }
-
-    function handleClickSuElimina(){
-        props.premutoSuOpzioneMenuTastoDestro("elimina");
+    function handleClick(azione: string){
+        props.premutoSuOpzioneMenuTastoDestro(azione);
     }
 
     return (
         <div ref={menuRef} className="menu-tasto-destro" style={{ top: props.y + 10, left: props.x + 10 }}>
             <ul>
-                <li onClick={handleClickSuRinomina}>Rinomina</li>
-                <li onClick={handleClickSuTaglia}>Taglia</li>
-                <li onClick={handleClickSuCopia}>Copia</li>
-                <li onClick={handleClickSuElimina}>Elimina</li>
+                <li onClick={() => handleClick("rinomina")}>Rinomina</li>
+                <li onClick={() => handleClick("taglia")}>Taglia</li>
+                <li onClick={() => handleClick("copia")}>Copia</li>
+                {
+                    props.elementoCopiato !== null ?
+                    <li onClick={() => handleClick("incolla")}>Incolla</li>
+                    : null
+                }
+                <li onClick={() => handleClick("elimina")}>Elimina</li>
             </ul>
         </div>
     );

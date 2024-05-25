@@ -5,6 +5,7 @@ import Albero from "./classi/Albero.ts";
 import "./App.css";
 import React from "react";
 import AlberoComponente from "./components/AlberoComponente.tsx";
+import { FaFolderOpen, FaSquare } from "react-icons/fa";
 
 function App(){
   const [albero, setAlbero] = useState<Albero | null>(null);
@@ -45,10 +46,11 @@ function App(){
   return (
     <div className="App">
       <div className="widgets">
-        <div className="widget" draggable onDragStart={(e) => handleOnDrag(e, "Nodo", -1)} onDragEnd={() => setHoveredItemId(null)}>Nodo</div>
-        <div className="widget" draggable onDragStart={(e) => handleOnDrag(e, "Articolo", -1)} onDragEnd={() => setHoveredItemId(null)}>Articolo</div>
+        <div className="widget" draggable onDragStart={(e) => handleOnDrag(e, "Nodo", -1)} onDragEnd={() => setHoveredItemId(null)}>Nuovo Nodo</div>
+        <div className="widget" draggable onDragStart={(e) => handleOnDrag(e, "Articolo", -1)} onDragEnd={() => setHoveredItemId(null)}>Nuovo Articolo</div>
       </div>
         <AlberoComponente albero={albero} setAlbero={setAlbero} handleOnDrag={handleOnDrag} hoveredItemId={hoveredItemId} setHoveredItemId={setHoveredItemId}/>
+        <div>Elementi Totali: {albero?.contaElementiNellAlbero()}</div>
     </div>
   )
 }
