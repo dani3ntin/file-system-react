@@ -129,6 +129,7 @@ export default class Nodo extends Elemento{
     const newNodo = new Nodo(nodo.nome);
     newNodo.successori = newSuccessori;
     newNodo.articoli = newArticoli;
+    newNodo.aperto = nodo.aperto;
     return newNodo;
   }
 

@@ -1,4 +1,4 @@
-import React from "react";
+import React, {KeyboardEvent} from "react";
 import { useState, useEffect, useRef } from "react";
 import Articolo from "../../classi/Articolo";
 import { FaFolderOpen, FaFolder,  FaRegFolder, FaRegFolderOpen, FaSquare } from "react-icons/fa";
@@ -21,8 +21,7 @@ function WidgetArticolo(props: any): JSX.Element {
             const target = event.target as HTMLElement; 
             const id = target.id;
             if(id != "textBoxNome" + props.articolo.id && props.idModoficaNome === props.articolo.id){
-                props.setIdModificaNome(-1);
-                props.modificaArticolo(props.articolo);
+                confermaNomeInseritoNellaTextbox();
             }
             setElementoCliccato(false);
         }
@@ -32,6 +31,11 @@ function WidgetArticolo(props: any): JSX.Element {
             document.removeEventListener("mousedown", handleClickOutside);
         };
     }, [menuRef, props]);
+
+    function confermaNomeInseritoNellaTextbox(): void{
+        props.setIdModificaNome(-1);
+        props.modificaArticolo(props.articolo);
+    }
 
     function getStile(): object{
         if(dragIniziato){
@@ -71,7 +75,7 @@ function WidgetArticolo(props: any): JSX.Element {
 
     function handleRightClick(e: React.MouseEvent){
         e.preventDefault();
-        setMenuTastoDestro({aperto: true, x: e.clientX, y: e.clientY});
+        setMenuTastoDestro({aperto: true, x: e.pageX, y: e.pageY});
     }
 
     function chiudiMenuTastoDestro(){
@@ -98,6 +102,12 @@ function WidgetArticolo(props: any): JSX.Element {
         props.handleDropOnArticolo(e, props.articolo.id)
     }
 
+    function handleKeyDown(event: KeyboardEvent<HTMLInputElement>): void{
+        if (event.key === 'Enter'){
+            confermaNomeInseritoNellaTextbox();
+        }
+    }
+
     return(
         <div className="dropped-widget-articolo" key={props.articolo.id} /*style={{ paddingLeft: ( props.depth * 20 + props.depth + 40) + "px" }}*/ 
         onDrop={onDropHandler}
@@ -120,7 +130,15 @@ function WidgetArticolo(props: any): JSX.Element {
                 />
             }
             <div className="icona-articolo"><FaSquare className="icona"/></div>
-            <input type="text" id={"textBoxNome" + props.articolo.id} name="myTextbox" className={props.idModoficaNome === props.articolo.id ? 'visible' : 'hidden'} value={props.nomeInserito} onChange={handleInputChange} ref={textBoxRef}/>
+            <input 
+                type="text" 
+                id={"textBoxNome" + props.articolo.id} 
+                className={props.idModoficaNome === props.articolo.id ? 'visible' : 'hidden'} 
+                value={props.nomeInserito} 
+                onChange={handleInputChange}
+                onKeyDown={handleKeyDown}  
+                ref={textBoxRef}
+            />
             {
                 props.idModoficaNome !== props.articolo.id ? <div className="nome-componente" onClick={() => setElementoCliccato(true)}>{props.articolo.nome}</div>
                 : null

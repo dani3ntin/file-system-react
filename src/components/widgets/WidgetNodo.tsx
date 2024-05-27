@@ -1,4 +1,4 @@
-import React from "react";
+import React, {KeyboardEvent } from "react";
 import { useState, useEffect, useRef } from "react";
 import Nodo from "../../classi/Nodo";
 import { FaFolderOpen, FaFolder,  FaRegFolder, FaRegFolderOpen, FaSquare } from "react-icons/fa";
@@ -38,6 +38,10 @@ function WidgetNodo(props: any): JSX.Element {
         };
     }, [menuRef, props]);
 
+    function confermaNomeInseritoNellaTextbox(): void{
+        props.setIdModificaNome(-1);
+        props.modificaNodo(props.nodo);
+    }
 
     function getImageApriChiudiCartella(): string{
         const albero = new Albero(props.albero.nodoPadre);
@@ -93,7 +97,7 @@ function WidgetNodo(props: any): JSX.Element {
 
     function handleRightClick(e: React.MouseEvent){
         e.preventDefault();
-        setMenuTastoDestro({aperto: true, x: e.clientX, y: e.clientY});
+        setMenuTastoDestro({aperto: true, x: e.pageX, y: e.pageY});
     }
 
     function chiudiMenuTastoDestro(){
@@ -111,8 +115,14 @@ function WidgetNodo(props: any): JSX.Element {
             }
     }
 
-    function handleInputChange(event: React.ChangeEvent<HTMLInputElement>){
+    function handleInputChange(event: React.ChangeEvent<HTMLInputElement>): void{
         props.setNomeInserito(event.target.value);
+    }
+
+    function handleKeyDown(event: KeyboardEvent<HTMLInputElement>): void{
+        if (event.key === 'Enter'){
+            confermaNomeInseritoNellaTextbox();
+        }
     }
 
     function onDropHandler(e: React.DragEvent){
@@ -153,7 +163,15 @@ function WidgetNodo(props: any): JSX.Element {
                 }
             </div>
 
-            <input type="text" id={"textBoxNome" + props.nodo.id} name="myTextbox" className={props.idModoficaNome === props.nodo.id ? 'visible' : 'hidden'} value={props.nomeInserito} onChange={handleInputChange} ref={textBoxRef}/>
+            <input 
+                type="text" 
+                id={"textBoxNome" + props.nodo.id} 
+                className={props.idModoficaNome === props.nodo.id ? 'visible' : 'hidden'} 
+                value={props.nomeInserito} 
+                onChange={handleInputChange} 
+                onKeyDown={handleKeyDown} 
+                ref={textBoxRef}
+            />
             {
                 props.idModoficaNome !== props.nodo.id ? <div className="nome-componente" onClick={() => setElementoCliccato(true)}>{props.nodo.nome}</div>
                 : null
