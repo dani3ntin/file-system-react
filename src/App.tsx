@@ -46,8 +46,11 @@ function App(){
   return (
     <div className="App">
       <div className="widgets">
-        <div className="widget" draggable onDragStart={(e) => handleOnDrag(e, "Nodo", -1)} onDragEnd={() => setHoveredItemId(null)}>Nuovo Nodo</div>
-        <div className="widget" draggable onDragStart={(e) => handleOnDrag(e, "Articolo", -1)} onDragEnd={() => setHoveredItemId(null)}>Nuovo Articolo</div>
+        <div className="buttons">
+          <div className="widget" draggable onDragStart={(e) => handleOnDrag(e, "Nodo", -1)} onDragEnd={() => setHoveredItemId(null)}>Nuovo Nodo</div>
+          <div className="widget" draggable onDragStart={(e) => handleOnDrag(e, "Articolo", -1)} onDragEnd={() => setHoveredItemId(null)}>Nuovo Articolo</div>
+        </div>
+        <div className="drag-instruction">Trascina il blocco per aggiungere un nuovo nodo o un nuovo articolo</div>
       </div>
         <AlberoComponente albero={albero} setAlbero={setAlbero} handleOnDrag={handleOnDrag} hoveredItemId={hoveredItemId} setHoveredItemId={setHoveredItemId}/>
         <div>Elementi Totali: {albero?.contaElementiNellAlbero()}</div>

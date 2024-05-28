@@ -1,6 +1,7 @@
 .dropped-widget-articolo {
   text-align: left;
   display:flex;
+  padding-right: 40px;
 }
 
 .nome-componente {
