@@ -68,4 +68,7 @@
   padding: 5px;
   width: auto;
   border: 5px solid #d1d1d1;
+  height: 75vh;
+  overflow-y: scroll;
+  overflow-x: scroll;
 }
